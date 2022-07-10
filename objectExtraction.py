@@ -19,27 +19,20 @@ edge = cv2.Canny(image, 100, 350)
 display_image(edge, 'Edge Image')
 
 points=[]
-ap =[] 
 for i in range(h):
     for j in range(w-1):
         if edge[i][j] == 255:
-            # points.append([i,j])
-            if(edge[i][j+1] == 255 or edge[i][j-1] == 255):
-                ap.append([i,j])    
-            if((edge[k][j] != 255 for k in range(i+1,h))):
+            if((edge[k][j] != 255 for k in range(0,i-1)) or (edge[k][j] != 255 for k in range(i+1,h))):
                 points.append([i,j])
+            #
 
+
+# form image from points
 black_image = np.zeros((h, w), dtype=np.uint8)
 for point in points:
     black_image[point[0]][point[1]] = 255
-display_image(black_image, 'Black Image')
+display_image(black_image, 'con Image')
 
-
-# After the latest edit
-black_image = np.zeros((h, w), dtype=np.uint8)
-for i in ap:
-    black_image[i[0]][i[1]] = 255
-display_image(black_image, 'Black Image')
 
 # thresh = cv2.threshold(gray, 224, 255, cv2.THRESH_BINARY_INV)[1]
 # display_image(thresh, 'Threshold')
