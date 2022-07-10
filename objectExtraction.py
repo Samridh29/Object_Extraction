@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 def display_image(image, text):
     cv2.imshow(text, image)
@@ -18,25 +19,45 @@ display_image(gray, 'Gray Image')
 edge = cv2.Canny(image, 100, 350)
 display_image(edge, 'Edge Image')
 
-points=[]
+points = []
+ap = []
+
 for i in range(h):
     for j in range(w-1):
         if edge[i][j] == 255:
-            if((edge[k][j] != 255 for k in range(0,i-1)) or (edge[k][j] != 255 for k in range(i+1,h))):
-                points.append([i,j])
-            #
+            # points.append([i,j])
+             for k in range(0,i-1):
+               if edge[k][j] == 255:
+                  points.append([k,j])
+               if edge[k][j+1] == 255:
+                  points.append([k,j+1])
+                  break
+             for k in reversed(range(h)) :
+               if edge[k][j] == 255:
+                  points.append([k,j])
+                  break
 
-
-# form image from points
 black_image = np.zeros((h, w), dtype=np.uint8)
-for point in points:
-    black_image[point[0]][point[1]] = 255
-display_image(black_image, 'con Image')
+for i in points:
+    black_image[i[0]][i[1]] = 255
+display_image(black_image, 'Black Image')
 
+# print(ap)
+mask = np.zeros(image.shape, dtype=np.uint8)
+#roi_corners = np.array([i[0]][i[1]], dtype=np.int32)
+roi_corners = np.array(points)
+# fill the ROI so it doesn't get wiped out when the mask is applied
+#channel_count = image.shape[2] # i.e. 3 or 4 depending on your image
+#ignore_mask_color = (255,)*channel_count
+#cv2.fillPoly(mask, roi_corners, ignore_mask_color)
 
-# thresh = cv2.threshold(gray, 224, 255, cv2.THRESH_BINARY_INV)[1]
-# display_image(thresh, 'Threshold')
+cv2.fillConvexPoly(mask, np.array(points, 'int32'), 255)
+# from Masterfool: use cv2.fillConvexPoly if you know it's convex
 
-# t =cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
-#     cv2.THRESH_BINARY,11,2)
-# display_image(t, 'Adaptive Threshold')
+# apply the mask
+masked_image = cv2.bitwise_and(image, mask)
+
+# save the result
+cv2.imwrite('image_masked.png', masked_image)
+plt.imshow(masked_image)
+plt.show()
